@@ -12,7 +12,10 @@ branches:
     - master
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean test scalafmtCheck scalafmtSbtCheck
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test scalafmtCheck scalafmtSbtCheck
+
+after_success:
+  - sbt ++$TRAVIS_SCALA_VERSION coverageReport coveralls
 
 before_cache:
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
