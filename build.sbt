@@ -9,8 +9,8 @@ externalResolvers := ("jboss" at "http://repository.jboss.org/nexus/content/grou
 libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-core" % fs2Version,
   "co.fs2" %% "fs2-io"   % fs2Version,
-  // "javax.jms" % "jms"           % "1.1",
   "javax.jms" % "javax.jms-api" % "2.0.1",
+  "com.ibm.mq" % "com.ibm.mq.allclient" % "9.0.4.0" % Test,
   "org.scalatest" %% "scalatest"                    % "3.0.4" % Test,
-  "com.ibm.mq" % "com.ibm.mq.allclient" % "9.0.4.0"
+  "org.mockito" % "mockito-scala_2.12" % "1.0.0" % Test
 )

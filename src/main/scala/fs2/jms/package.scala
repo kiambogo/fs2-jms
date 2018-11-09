@@ -40,8 +40,8 @@ package object jms {
     }
   }
 
-  final case class MessageSentCallback(cb: Either[Throwable, Message] => Unit) extends CompletionListener {
-    override def onCompletion(msg: Message): Unit                      = cb(Right(msg))
+  final case class MessageSentCallback(cb: Either[Throwable, TextMessage] => Unit) extends CompletionListener {
+    override def onCompletion(msg: Message): Unit                      = cb(Right(msg.asInstanceOf[TextMessage]))
     override def onException(msg: Message, exception: Exception): Unit = cb(Left(exception))
   }
 
