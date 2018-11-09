@@ -37,5 +37,5 @@ developers := List(
 homepage := Some(url("https://github.com/kiambogo/fs2-jms"))
 scmInfo := Some(ScmInfo(url("https://github.com/kiambogo/fs2-jms"), "scm:git:git@github.com:kiambogo/fs2-jms.git"))
 
-
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseCommitMessage := s"[skip travis] Setting version to ${(version in ThisBuild).value}"
