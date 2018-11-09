@@ -34,15 +34,15 @@ package object jms {
       List(1 to settings.sessionCount).flatten.traverse { _ =>
         F.runAsync(initSession) {
           case Right(session) => IO(sessionCallback(session))
-          case Left(e)        => throw new Exception("")
+          case Left(e)        => throw e
         }
       }
     }
   }
 
   final case class MessageSentCallback(cb: Either[Throwable, TextMessage] => Unit) extends CompletionListener {
-    override def onCompletion(msg: Message): Unit                      = cb(Right(msg.asInstanceOf[TextMessage]))
-    override def onException(msg: Message, exception: Exception): Unit = cb(Left(exception))
+    override def onCompletion(msg: Message)                      = cb(Right(msg.asInstanceOf[TextMessage]))
+    override def onException(msg: Message, exception: Exception) = cb(Left(exception))
   }
 
   final class AcknowledgeMode(val code: Int)

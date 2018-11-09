@@ -59,4 +59,35 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
     output._1.map(_.right.get.getText).toList shouldBe List(1, 2, 3, 4, 6, 7, 8, 9).map(_.toString)
     output._2.map(_.left.get.getMessage).toList shouldBe List("HI")
   }
+
+  it should "throw an error if there is a problem creating a connection" in new TestContext {
+
+    doThrow(new JMSException("Error creating connection")).when(connectionFactory).createQueueConnection()
+
+    assertThrows[JMSException] {
+      val output = fs2.Stream
+        .range(1, 10)
+        .map(_.toString)
+        .through(textPipe[IO](producerSettings))
+        .compile
+        .toVector
+        .unsafeRunSync
+    }
+  }
+
+  it should "throw an error if there is a problem creating a session" in new TestContext {
+
+    doThrow(new JMSException("Error creating session")).when(connection).createQueueSession(any, any)
+
+    assertThrows[JMSException] {
+      val output = fs2.Stream
+        .range(1, 10)
+        .map(_.toString)
+        .through(textPipe[IO](producerSettings))
+        .compile
+        .toVector
+        .unsafeRunSync
+    }
+
+  }
 }
