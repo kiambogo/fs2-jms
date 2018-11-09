@@ -26,3 +26,16 @@ libraryDependencies ++= Seq(
 // coverage
 coverageMinimum := 60
 coverageFailOnMinimum := true
+
+publishTo := Some("Sonatype Nexus" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+
+licenses := Seq("MIT" -> url("https://github.com/kiambogo/fs2-jms/blob/master/LICENSE"))
+
+developers := List(
+  Developer(id = "kiambogo", name = "Christopher Poenaru", email = "kiambogo@gmail.com", url = url("https://github.com/kiambogo"))
+)
+homepage := Some(url("https://github.com/kiambogo/fs2-jms"))
+scmInfo := Some(ScmInfo(url("https://github.com/kiambogo/fs2-jms"), "scm:git:git@github.com:kiambogo/fs2-jms.git"))
+
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
