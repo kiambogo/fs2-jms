@@ -66,7 +66,7 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
       .unsafeRunSync
       .partition(_.isRight)
 
-    output._1.map(_.right.get.getText).toList shouldBe (List(1,2,3,4,6,7,8,9).map(_.toString))
-    output._2.map(_.left.get).toList shouldBe (List(1 to 9).flatten.map(_.toString))
+    output._1.map(_.right.get.getText).toList shouldBe List(1,2,3,4,6,7,8,9).map(_.toString)
+    output._2.map(_.left.get.getMessage).toList shouldBe List("HI")
   }
 }

@@ -32,10 +32,10 @@ package object producer {
               val callback = MessageSentCallback(cb)
               val s = sessionProducer.producer.send(msg, callback)
               s
-            }
+            }.attempt
             _ <- queue.enqueue1(sessionProducer)
           } yield callback
-        }.attempt
+        }
       }
   }
 }
