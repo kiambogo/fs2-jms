@@ -16,19 +16,6 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
     implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
 
     val producerSettings = {
-      // val connectionFactory = new MQQueueConnectionFactory()
-      // connectionFactory.setHostName("localhost")
-      // connectionFactory.setPort(1414)
-      // connectionFactory.setQueueManager("QM1")
-      // connectionFactory.setTransportType(CommonConstants.WMQ_CM_CLIENT)
-      // connectionFactory.setChannel("DEV.APP.SVRCONN")
-
-      // JmsProducerSettings(
-      //   connectionFactory,
-      //   sessionCount = 2,
-      //   queueName = "DEV.QUEUE.1"
-      // )
-
       JmsProducerSettings(
         connectionFactory,
         sessionCount = 1,
