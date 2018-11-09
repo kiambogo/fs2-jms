@@ -14,11 +14,13 @@ package object producer {
        * We construct a new ProducerSession, comprising of the session and the corresponding
        * MessageProducer for the session and append this to the producer queue.
        */
-    def sessionCreatedCallBack(producers: Queue[F, ProducerSession]): QueueSession => Unit = { session =>
-      F.runAsync(producers.enqueue1(
-        ProducerSession(session, session.createProducer(session.createQueue(producerSettings.queueName)))
-      ))(_ => IO.unit).unsafeRunSync
-    }
+      def sessionCreatedCallBack(producers: Queue[F, ProducerSession]): QueueSession => Unit = { session =>
+        F.runAsync(
+            producers.enqueue1(
+              ProducerSession(session, session.createProducer(session.createQueue(producerSettings.queueName)))
+            ))(_ => IO.unit)
+          .unsafeRunSync
+      }
 
       Stream.eval(Queue.bounded[F, ProducerSession](producerSettings.sessionCount)).flatMap { queue =>
         val jmsProducer = new JmsProducer[F](producerSettings, sessionCreatedCallBack(queue))
@@ -28,11 +30,13 @@ package object producer {
           for {
             sessionProducer <- queue.dequeue1
             msg = sessionProducer.session.createTextMessage(elem)
-            callback <- Effect[F].async[TextMessage] { cb =>
-              val callback = MessageSentCallback(cb)
-              val s = sessionProducer.producer.send(msg, callback)
-              s
-            }.attempt
+            callback <- Effect[F]
+              .async[TextMessage] { cb =>
+                val callback = MessageSentCallback(cb)
+                val s        = sessionProducer.producer.send(msg, callback)
+                s
+              }
+              .attempt
             _ <- queue.enqueue1(sessionProducer)
           } yield callback
         }

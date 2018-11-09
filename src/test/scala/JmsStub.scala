@@ -8,16 +8,16 @@ import javax.jms._
 trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
   // Mocks
   val connectionFactory = mock[QueueConnectionFactory]
-  val connection = mock[QueueConnection]
-  val session = mock[QueueSession]
-  val queue = mock[Queue]
-  val messageProducer = mock[MessageProducer]
-  val callback = mock[CompletionListener]
+  val connection        = mock[QueueConnection]
+  val session           = mock[QueueSession]
+  val queue             = mock[Queue]
+  val messageProducer   = mock[MessageProducer]
+  val callback          = mock[CompletionListener]
 
   // Argument captors
-  val cbCaptor = ArgCaptor[CompletionListener]
+  val cbCaptor      = ArgCaptor[CompletionListener]
   val messageCaptor = ArgCaptor[TextMessage]
-  val bodyCaptor = ArgCaptor[String]
+  val bodyCaptor    = ArgCaptor[String]
 
   when(connectionFactory.createQueueConnection()) thenReturn connection
   when(connection.createQueueSession(any, any)) thenReturn session
@@ -27,6 +27,7 @@ trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
   doAnswer { (body: String) =>
     val msg = mock[TextMessage]
     when(msg.getText) thenReturn body
-    msg}.when(session).createTextMessage(any[String])
+    msg
+  }.when(session).createTextMessage(any[String])
   doAnswer(cbCaptor.value.onCompletion(messageCaptor.value)).when(messageProducer).send(messageCaptor, cbCaptor)
 }

@@ -26,14 +26,16 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
   }
 
   "JMS producer" should "send multiple messages to a queue successfully" in new TestContext {
-    fs2.Stream.range(1, 10)
+    fs2.Stream
+      .range(1, 10)
       .map(_.toString)
       .through(textPipe[IO](producerSettings))
       .rethrow
       .compile
       .toVector
       .unsafeRunSync
-      .map(_.getText).toList shouldBe (List(1 to 9).flatten.map(_.toString))
+      .map(_.getText)
+      .toList shouldBe (List(1 to 9).flatten.map(_.toString))
   }
 
   it should "return a Left with an exception for a message that failed to send" in new TestContext {
@@ -45,7 +47,8 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
         cbCaptor.value.onCompletion(messageCaptor.value)
     }.when(messageProducer).send(messageCaptor, cbCaptor)
 
-    val output = fs2.Stream.range(1, 10)
+    val output = fs2.Stream
+      .range(1, 10)
       .map(_.toString)
       .through(textPipe[IO](producerSettings))
       .compile
@@ -53,7 +56,7 @@ class ProducerSpec extends FlatSpec with Matchers with JmsMock {
       .unsafeRunSync
       .partition(_.isRight)
 
-    output._1.map(_.right.get.getText).toList shouldBe List(1,2,3,4,6,7,8,9).map(_.toString)
+    output._1.map(_.right.get.getText).toList shouldBe List(1, 2, 3, 4, 6, 7, 8, 9).map(_.toString)
     output._2.map(_.left.get.getMessage).toList shouldBe List("HI")
   }
 }

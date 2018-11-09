@@ -18,14 +18,14 @@ package object jms {
   final case class ProducerSession(session: Session, producer: MessageProducer)
 
   class JmsProducer[F[_]](settings: JmsProducerSettings, sessionCallback: QueueSession => Unit)(implicit F: Effect[F]) {
-    val factory    = settings.connectionFactory
-    val connection: F[QueueConnection] = F.delay{
+    val factory = settings.connectionFactory
+    val connection: F[QueueConnection] = F.delay {
       factory.createQueueConnection()
     }
 
     def initSession: F[QueueSession] =
       connection.flatMap { con =>
-        F.delay{
+        F.delay {
           con.createQueueSession(false, AcknowledgeMode.AutoAcknowledge.code)
         }
       }
