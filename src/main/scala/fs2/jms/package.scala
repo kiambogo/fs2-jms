@@ -19,7 +19,7 @@ package object jms {
 
   class JmsProducer[F[_]](settings: JmsProducerSettings, sessionCallback: QueueSession => Unit)(implicit F: Effect[F]) {
     val factory = settings.connectionFactory
-    val connection: F[QueueConnection] = F.delay {
+    lazy val connection: F[QueueConnection] = F.delay {
       factory.createQueueConnection()
     }
 
@@ -30,13 +30,17 @@ package object jms {
         }
       }
 
-    def openSessions(): SyncIO[List[Unit]] = {
+    def openSessions(): F[List[Unit]] = {
       List(1 to settings.sessionCount).flatten.traverse { _ =>
         F.runAsync(initSession) {
           case Right(session) => IO(sessionCallback(session))
           case Left(e)        => throw e
         }
-      }
+      }.to[F]
+    }
+
+    def shutdown(): F[Unit] = {
+      connection.flatMap(con => F.delay(con.close))
     }
   }
 

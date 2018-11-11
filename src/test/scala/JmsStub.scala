@@ -6,28 +6,37 @@ import org.mockito.captor.ArgCaptor
 import javax.jms._
 
 trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
-  // Mocks
   val connectionFactory = mock[QueueConnectionFactory]
-  val connection        = mock[QueueConnection]
-  val session           = mock[QueueSession]
-  val queue             = mock[Queue]
-  val messageProducer   = mock[MessageProducer]
-  val callback          = mock[CompletionListener]
+  val connection = mock[QueueConnection]
 
-  // Argument captors
-  val cbCaptor      = ArgCaptor[CompletionListener]
-  val messageCaptor = ArgCaptor[TextMessage]
-  val bodyCaptor    = ArgCaptor[String]
-
-  when(connectionFactory.createQueueConnection()) thenReturn connection
-  when(connection.createQueueSession(any, any)) thenReturn session
-  when(session.createQueue(any)) thenReturn queue
-  when(session.createProducer(queue)) thenReturn messageProducer
-  // Create a new mock message on invocation
-  doAnswer { (body: String) =>
+  def mockTextMessage: String => TextMessage = { body =>
     val msg = mock[TextMessage]
     when(msg.getText) thenReturn body
     msg
-  }.when(session).createTextMessage(any[String])
-  doAnswer(cbCaptor.value.onCompletion(messageCaptor.value)).when(messageProducer).send(messageCaptor, cbCaptor)
+  }
+
+  def mockMessageProducer: MessageProducer = {
+    val messageCaptor = ArgCaptor[TextMessage]
+    val cbCaptor      = ArgCaptor[CompletionListener]
+    val messageProducer   = mock[MessageProducer]
+    doAnswer(cbCaptor.value.onCompletion(messageCaptor.value))
+      .when(messageProducer).send(messageCaptor, cbCaptor)
+    messageProducer
+  }
+
+  def mockSession: QueueSession = {
+    val session = mock[QueueSession]
+    val queue             = mock[Queue]
+    val mmp = mockMessageProducer
+    when(session.createQueue(any)) thenReturn queue
+    when(session.createProducer(queue)) thenReturn mmp
+    doAnswer(()).when(session).close()
+    doAnswer(b => mockTextMessage(b)).when(session).createTextMessage(any[String])
+    session
+  }
+
+  val session = mockSession
+  when(connection.createQueueSession(any, any)) thenReturn session
+  doAnswer(()).when(connection).close()
+  when(connectionFactory.createQueueConnection()) thenReturn connection
 }
