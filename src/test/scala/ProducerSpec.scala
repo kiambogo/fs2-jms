@@ -42,9 +42,9 @@ class ProducerSpec extends FlatSpec with Matchers {
   it should "return a Left with an exception for a message that failed to send" in new TestContext {
 
     override def mockMessageProducer: MessageProducer = {
-      val messageCaptor = ArgCaptor[TextMessage]
-      val cbCaptor      = ArgCaptor[CompletionListener]
-      val messageProducer   = mock[MessageProducer]
+      val messageCaptor   = ArgCaptor[TextMessage]
+      val cbCaptor        = ArgCaptor[CompletionListener]
+      val messageProducer = mock[MessageProducer]
       doAnswer { (msg: TextMessage, callback: CompletionListener) =>
         if (msg.getText == "5")
           cbCaptor.value.onException(msg, new Exception("Exception on send"))

@@ -7,7 +7,7 @@ import javax.jms._
 
 trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
   val connectionFactory = mock[QueueConnectionFactory]
-  val connection = mock[QueueConnection]
+  val connection        = mock[QueueConnection]
 
   def mockTextMessage: String => TextMessage = { body =>
     val msg = mock[TextMessage]
@@ -16,18 +16,19 @@ trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
   }
 
   def mockMessageProducer: MessageProducer = {
-    val messageCaptor = ArgCaptor[TextMessage]
-    val cbCaptor      = ArgCaptor[CompletionListener]
-    val messageProducer   = mock[MessageProducer]
+    val messageCaptor   = ArgCaptor[TextMessage]
+    val cbCaptor        = ArgCaptor[CompletionListener]
+    val messageProducer = mock[MessageProducer]
     doAnswer(cbCaptor.value.onCompletion(messageCaptor.value))
-      .when(messageProducer).send(messageCaptor, cbCaptor)
+      .when(messageProducer)
+      .send(messageCaptor, cbCaptor)
     messageProducer
   }
 
   def mockSession: QueueSession = {
     val session = mock[QueueSession]
-    val queue             = mock[Queue]
-    val mmp = mockMessageProducer
+    val queue   = mock[Queue]
+    val mmp     = mockMessageProducer
     when(session.createQueue(any)) thenReturn queue
     when(session.createProducer(queue)) thenReturn mmp
     doAnswer(()).when(session).close()

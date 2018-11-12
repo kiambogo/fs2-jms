@@ -31,12 +31,14 @@ package object jms {
       }
 
     def openSessions(): F[List[Unit]] = {
-      List(1 to settings.sessionCount).flatten.traverse { _ =>
-        F.runAsync(initSession) {
-          case Right(session) => IO(sessionCallback(session))
-          case Left(e)        => throw e
+      List(1 to settings.sessionCount).flatten
+        .traverse { _ =>
+          F.runAsync(initSession) {
+            case Right(session) => IO(sessionCallback(session))
+            case Left(e)        => throw e
+          }
         }
-      }.to[F]
+        .to[F]
     }
 
     def shutdown(): F[Unit] = {
