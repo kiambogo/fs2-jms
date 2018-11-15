@@ -35,22 +35,21 @@ class ProducerSpec extends FlatSpec with Matchers {
       .compile
       .toVector
       .unsafeRunSync
-      .map(_.getText)
-      .toList shouldBe (List(1 to 9).flatten.map(_.toString))
+
+    receivedMessages shouldBe (List(1 to 9).flatten.map(_.toString))
   }
 
   it should "return a Left with an exception for a message that failed to send" in new TestContext {
 
     override def mockMessageProducer: MessageProducer = {
       val messageCaptor   = ArgCaptor[TextMessage]
-      val cbCaptor        = ArgCaptor[CompletionListener]
       val messageProducer = mock[MessageProducer]
-      doAnswer { (msg: TextMessage, callback: CompletionListener) =>
+      doAnswer { msg: TextMessage =>
         if (msg.getText == "5")
-          cbCaptor.value.onException(msg, new Exception("Exception on send"))
+          throw new Exception("Exception on send")
         else
-          cbCaptor.value.onCompletion(messageCaptor.value)
-      }.when(messageProducer).send(messageCaptor, cbCaptor)
+          receivedMessages = receivedMessages :+ messageCaptor.value.getText()
+      }.when(messageProducer).send(messageCaptor)
       messageProducer
     }
 
@@ -61,10 +60,9 @@ class ProducerSpec extends FlatSpec with Matchers {
       .compile
       .toVector
       .unsafeRunSync
-      .partition(_.isRight)
 
-    output._1.map(_.right.get.getText).toList shouldBe List(1, 2, 3, 4, 6, 7, 8, 9).map(_.toString)
-    output._2.map(_.left.get.getMessage).toList shouldBe List("Exception on send")
+    receivedMessages shouldBe List(1, 2, 3, 4, 6, 7, 8, 9).map(_.toString)
+    output.filter(_.isLeft).map(_.left.get.getMessage) shouldBe List("Exception on send")
   }
 
   it should "throw an error if there is a problem creating a connection" in new TestContext {
