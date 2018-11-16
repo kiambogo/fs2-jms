@@ -46,11 +46,6 @@ package object jms {
     }
   }
 
-  final case class MessageSentCallback(cb: Either[Throwable, TextMessage] => Unit) extends CompletionListener {
-    override def onCompletion(msg: Message)                      = cb(Right(msg.asInstanceOf[TextMessage]))
-    override def onException(msg: Message, exception: Exception) = cb(Left(exception))
-  }
-
   final class AcknowledgeMode(val code: Int)
 
   object AcknowledgeMode {

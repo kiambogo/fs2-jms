@@ -1,13 +1,14 @@
 package fs2
 package jms
 
+import javax.jms._
 import org.mockito.{MockitoSugar, ArgumentMatchersSugar}
 import org.mockito.captor.ArgCaptor
-import javax.jms._
 
 trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
-  val connectionFactory = mock[QueueConnectionFactory]
-  val connection        = mock[QueueConnection]
+  val connectionFactory              = mock[QueueConnectionFactory]
+  val connection                     = mock[QueueConnection]
+  var receivedMessages: List[String] = List()
 
   def mockTextMessage: String => TextMessage = { body =>
     val msg = mock[TextMessage]
@@ -17,11 +18,10 @@ trait JmsMock extends MockitoSugar with ArgumentMatchersSugar {
 
   def mockMessageProducer: MessageProducer = {
     val messageCaptor   = ArgCaptor[TextMessage]
-    val cbCaptor        = ArgCaptor[CompletionListener]
     val messageProducer = mock[MessageProducer]
-    doAnswer(cbCaptor.value.onCompletion(messageCaptor.value))
+    doAnswer { receivedMessages = receivedMessages :+ messageCaptor.value.getText(); () }
       .when(messageProducer)
-      .send(messageCaptor, cbCaptor)
+      .send(messageCaptor)
     messageProducer
   }
 
