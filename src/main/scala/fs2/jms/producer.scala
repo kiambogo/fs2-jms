@@ -51,4 +51,9 @@ package object producer {
         }
     }
   }
+
+  def textSink[F[_]](producerSettings: JmsProducerSettings)(implicit F: ConcurrentEffect[F]): fs2.Sink[F, String] = {
+    _.through(textPipe(producerSettings))
+      .map(_ => ())
+  }
 }

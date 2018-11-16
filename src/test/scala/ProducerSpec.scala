@@ -26,7 +26,7 @@ class ProducerSpec extends FlatSpec with Matchers {
 
   }
 
-  "JMS producer" should "send multiple messages to a queue successfully" in new TestContext {
+  "JMS textPipe" should "send multiple messages to a queue successfully" in new TestContext {
     fs2.Stream
       .range(1, 10)
       .map(_.toString)
@@ -112,6 +112,97 @@ class ProducerSpec extends FlatSpec with Matchers {
       .range(1, 10)
       .map(_.toString)
       .through(textPipe[IO](producerSettings))
+      .compile
+      .toVector
+      .unsafeRunSync
+
+    verify(connection, times(1)).close()
+  }
+
+  "JMS textSink" should "send multiple messages to a queue successfully" in new TestContext {
+    fs2.Stream
+      .range(1, 10)
+      .map(_.toString)
+      .through(textSink[IO](producerSettings))
+      .compile
+      .toVector
+      .unsafeRunSync
+
+    receivedMessages shouldBe (List(1 to 9).flatten.map(_.toString))
+  }
+
+  it should "return a Left with an exception for a message that failed to send" in new TestContext {
+
+    override def mockMessageProducer: MessageProducer = {
+      val messageCaptor   = ArgCaptor[TextMessage]
+      val messageProducer = mock[MessageProducer]
+      doAnswer { msg: TextMessage =>
+        if (msg.getText == "5")
+          throw new Exception("Exception on send")
+        else
+          receivedMessages = receivedMessages :+ messageCaptor.value.getText()
+      }.when(messageProducer).send(messageCaptor)
+      messageProducer
+    }
+
+    val output = fs2.Stream
+      .range(1, 10)
+      .map(_.toString)
+      .through(textSink[IO](producerSettings))
+      .compile
+      .toVector
+      .unsafeRunSync
+
+    receivedMessages shouldBe List(1, 2, 3, 4, 6, 7, 8, 9).map(_.toString)
+  }
+
+  it should "throw an error if there is a problem creating a connection" in new TestContext {
+
+    doThrow(new JMSException("Error creating connection")).when(connectionFactory).createQueueConnection()
+
+    assertThrows[JMSException] {
+      val output = fs2.Stream
+        .range(1, 10)
+        .map(_.toString)
+        .through(textSink[IO](producerSettings))
+        .compile
+        .toVector
+        .unsafeRunSync
+    }
+  }
+
+  it should "throw an error if there is a problem creating a session" in new TestContext {
+
+    doThrow(new JMSException("Error creating session")).when(connection).createQueueSession(any, any)
+
+    assertThrows[JMSException] {
+      val output = fs2.Stream
+        .range(1, 10)
+        .map(_.toString)
+        .through(textSink[IO](producerSettings))
+        .compile
+        .toVector
+        .unsafeRunSync
+    }
+  }
+
+  it should "close all sessions on stream termination" in new TestContext(sessionCount = 2) {
+    fs2.Stream
+      .range(1, 10)
+      .map(_.toString)
+      .through(textSink[IO](producerSettings))
+      .compile
+      .toVector
+      .unsafeRunSync
+
+    verify(session, times(2)).close()
+  }
+
+  it should "close the connection on stream termination" in new TestContext(sessionCount = 2) {
+    fs2.Stream
+      .range(1, 10)
+      .map(_.toString)
+      .through(textSink[IO](producerSettings))
       .compile
       .toVector
       .unsafeRunSync
