@@ -33,7 +33,7 @@ class ProducerSpec extends FlatSpec with Matchers {
     fs2.Stream
       .range(1, 10)
       .map(_.toString)
-      .through(textPipe[IO](makeProducerSettings(jmsQueue)))
+      .through(textPipe[IO](producerSettings(jmsQueue)))
       .rethrow
       .compile
       .toVector
@@ -129,7 +129,7 @@ class ProducerSpec extends FlatSpec with Matchers {
     fs2.Stream
       .range(1, 10)
       .map(_.toString)
-      .through(textSink[IO](makeProducerSettings(jmsQueue)))
+      .through(textSink[IO](producerSettings(jmsQueue)))
       .compile
       .toVector
       .unsafeRunSync
@@ -216,7 +216,7 @@ class ProducerSpec extends FlatSpec with Matchers {
     verify(connection, times(1)).close()
   }
 
-  private def makeProducerSettings(jmsQueue: JmsQueue, sessionCount: Int = 1): JmsProducerSettings = {
+  private def producerSettings(jmsQueue: JmsQueue, sessionCount: Int = 1): JmsProducerSettings = {
     JmsProducerSettings(
       jmsQueue.createConnectionFactory,
       sessionCount = sessionCount,
