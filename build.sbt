@@ -20,7 +20,8 @@ libraryDependencies ++= Seq(
   "co.fs2"        %% "fs2-io"            % fs2Version,
   "javax.jms"     % "javax.jms-api"      % "2.0.1",
   "org.scalatest" %% "scalatest"         % "3.0.4" % Test,
-  "org.mockito"   % "mockito-scala_2.12" % "1.0.0" % Test
+  "org.mockito"   % "mockito-scala_2.12" % "1.0.0" % Test,
+  "com.github.sullis" %% "jms-testkit" % "0.0.1-SNAPSHOT" % Test
 )
 
 // coverage

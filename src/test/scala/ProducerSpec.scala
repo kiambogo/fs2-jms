@@ -6,7 +6,7 @@ import fs2.jms.producer._
 import cats.effect.{IO, ContextShift}
 import org.scalatest.{FlatSpec, Matchers, BeforeAndAfterEach}
 import org.mockito.captor.ArgCaptor
-
+import jmstestkit.JmsQueue
 import javax.jms._
 
 import scala.concurrent.ExecutionContext
@@ -26,17 +26,20 @@ class ProducerSpec extends FlatSpec with Matchers {
 
   }
 
-  "JMS textPipe" should "send multiple messages to a queue successfully" in new TestContext {
+  "JMS textPipe" should "send multiple messages to a queue successfully" in {
+    implicit val ec: ExecutionContext             = ExecutionContext.global
+    implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
+    val jmsQueue = JmsQueue()
     fs2.Stream
       .range(1, 10)
       .map(_.toString)
-      .through(textPipe[IO](producerSettings))
+      .through(textPipe[IO](makeProducerSettings(jmsQueue, 1)))
       .rethrow
       .compile
       .toVector
       .unsafeRunSync
 
-    receivedMessages shouldBe (List(1 to 9).flatten.map(_.toString))
+    jmsQueue.toSeq shouldBe Seq("1", "2", "3", "4", "5", "6", "7", "8", "9")
   }
 
   it should "return a Left with an exception for a message that failed to send" in new TestContext {
@@ -119,16 +122,19 @@ class ProducerSpec extends FlatSpec with Matchers {
     verify(connection, times(1)).close()
   }
 
-  "JMS textSink" should "send multiple messages to a queue successfully" in new TestContext {
+  "JMS textSink" should "send multiple messages to a queue successfully" in {
+    implicit val ec: ExecutionContext             = ExecutionContext.global
+    implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
+    val jmsQueue = JmsQueue()
     fs2.Stream
       .range(1, 10)
       .map(_.toString)
-      .through(textSink[IO](producerSettings))
+      .through(textSink[IO](makeProducerSettings(jmsQueue, 1)))
       .compile
       .toVector
       .unsafeRunSync
 
-    receivedMessages shouldBe (List(1 to 9).flatten.map(_.toString))
+    jmsQueue.toSeq shouldBe Seq("1", "2", "3", "4", "5", "6", "7", "8", "9")
   }
 
   it should "return a Left with an exception for a message that failed to send" in new TestContext {
@@ -209,4 +215,13 @@ class ProducerSpec extends FlatSpec with Matchers {
 
     verify(connection, times(1)).close()
   }
+
+  private def makeProducerSettings(jmsQueue: JmsQueue, sessionCount: Int): JmsProducerSettings = {
+    JmsProducerSettings(
+      jmsQueue.createConnectionFactory,
+      sessionCount = sessionCount,
+      queueName = jmsQueue.queueName
+    )
+  }
+
 }
