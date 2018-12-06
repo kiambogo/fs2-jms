@@ -24,8 +24,6 @@ libraryDependencies ++= Seq(
   "io.github.sullis" %% "jms-testkit" % "0.0.1" % Test
 )
 
-resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases/"
-
 // coverage
 coverageMinimum := 60
 coverageFailOnMinimum := true
