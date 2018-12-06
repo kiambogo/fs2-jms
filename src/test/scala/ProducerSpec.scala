@@ -218,7 +218,7 @@ class ProducerSpec extends FlatSpec with Matchers {
 
   private def producerSettings(jmsQueue: JmsQueue, sessionCount: Int = 1): JmsProducerSettings = {
     JmsProducerSettings(
-      jmsQueue.createConnectionFactory,
+      jmsQueue.createQueueConnectionFactory,
       sessionCount = sessionCount,
       queueName = jmsQueue.queueName
     )
