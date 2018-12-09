@@ -13,7 +13,7 @@ scalacOptions ++= Seq(
   "-Ypartial-unification" // allow the compiler to unify type constructors of different arities
 )
 
-val fs2Version = "1.0.0"
+val fs2Version = "1.0.2"
 
 libraryDependencies ++= Seq(
   "co.fs2"           %% "fs2-core"          % fs2Version,
