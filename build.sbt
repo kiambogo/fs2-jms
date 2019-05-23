@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   "javax.jms"        % "javax.jms-api"      % "2.0.1",
   "org.scalatest"    %% "scalatest"         % "3.0.5" % Test,
   "org.mockito"      % "mockito-scala_2.12" % "1.0.9" % Test,
-  "io.github.sullis" %% "jms-testkit"       % "0.2.3" % Test
+  "io.github.sullis" %% "jms-testkit"       % "0.2.4" % Test
 )
 
 // coverage
