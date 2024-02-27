@@ -1,7 +1,7 @@
 name := "fs2-jms"
 organization := "io.github.kiambogo"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.19"
 
 scalacOptions ++= Seq(
   "-deprecation", // warn about use of deprecated APIs
